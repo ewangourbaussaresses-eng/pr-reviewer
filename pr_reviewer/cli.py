@@ -63,7 +63,11 @@ def command_review(args: argparse.Namespace) -> int:
         if not repo:
             print("✖ --comment nécessite --repo ou GITHUB_REPOSITORY", file=sys.stderr)
             return 2
-        outcome = post_comment(repo, int(args.pr), comment, dry_run=args.dry_run)
+        try:
+            outcome = post_comment(repo, int(args.pr), comment, dry_run=args.dry_run)
+        except RuntimeError as exc:
+            print(f"✖ {exc}", file=sys.stderr)
+            return 2
         if outcome.get("dry_run"):
             print("ℹ simulation : commentaire non publié", file=sys.stderr)
         else:
