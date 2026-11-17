@@ -1,0 +1,37 @@
+# Exemple de workflow à copier dans votre dépôt : .github/workflows/pr-review.yml
+name: pr-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer pr-reviewer
+        run: pip install "git+https://github.com/<vous>/pr-reviewer.git"
+
+      - name: Relire la pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}   # optionnel
+        run: |
+          python -m pr_reviewer review \
+            --pr "${{ github.event.pull_request.number }}" \
+            --base "origin/${{ github.base_ref }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --comment --annotations --fail-on error
