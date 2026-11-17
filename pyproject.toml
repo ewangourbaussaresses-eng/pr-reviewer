@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pr-reviewer"
+version = "1.0.0"
+description = "Revue automatique de pull requests : règles statiques + IA, commentaire GitHub."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["code-review", "pull-request", "github-actions", "static-analysis", "llm"]
+classifiers = [
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.scripts]
+pr-reviewer = "pr_reviewer.cli:main"
+
+[tool.setuptools]
+packages = ["pr_reviewer"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
