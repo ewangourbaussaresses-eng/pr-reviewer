@@ -1,0 +1,44 @@
+name: pr-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer pr-reviewer
+        run: pip install -e .
+
+      - name: Relire la pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          # Optionnel : sans ce secret, seules les règles statiques s'appliquent.
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+        run: |
+          python -m pr_reviewer review \
+            --pr "${{ github.event.pull_request.number }}" \
+            --base "origin/${{ github.base_ref }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --comment \
+            --annotations \
+            --fail-on error
+
+      - name: Échec seulement sur les vraies erreurs
+        if: failure()
+        run: echo "Des erreurs bloquantes ont été détectées : voir le commentaire de la PR."
